@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package td.api;
+
+service TdApi {
+  rpc AddAccount(AddAccountRequest) returns (AddAccountResponse) {}
+}
+
+message AddAccountRequest { string phone = 1; }
+
+message AddAccountResponse {}
