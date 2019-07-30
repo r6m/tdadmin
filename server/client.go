@@ -55,7 +55,7 @@ func NewClient(config tdlib.Config) *Client {
 func (c *Client) handleErr(err error) bool {
 	var duration int64
 	if n, _ := fmt.Sscanf(err.Error(), "FLOOD_WAIT_%d", &duration); n == 1 {
-		fmt.Println("FLOOD_WAIT", duration, "sec")
+		log.Println("FLOOD_WAIT", duration, "sec")
 		c.floodWait = time.Duration(duration) * time.Second
 		c.lastFlood = time.Now()
 		return true

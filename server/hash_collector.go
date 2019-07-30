@@ -45,7 +45,7 @@ func (h *HashCollector) Start() {
 		storeTicker.Stop()
 		close(h.stopCh)
 		close(h.collector)
-		fmt.Println("HashCollector stopped")
+		log.Println("HashCollector stopped")
 	}()
 	defer func() {
 		h.mut.Lock()
