@@ -1,5 +1,5 @@
 test
 tdlib-db
 tdlib-files
-.env
+.env.dev
 *.txt
