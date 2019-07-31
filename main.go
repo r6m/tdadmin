@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"tdadmin/server"
+	"tdadmin/tg"
 
 	"github.com/rezam90/go-tdlib"
 )
@@ -15,7 +15,7 @@ func main() {
 	tdlib.SetFilePath("./errors.txt")
 
 	// Create new instance of client
-	client := server.NewClient(tdlib.Config{
+	account := tg.NewAccount(tdlib.Config{
 		APIID:               "21724",
 		APIHash:             "3e0cb5efcd52300aec5994fdfc5bdc16",
 		SystemLanguageCode:  "en",
@@ -35,17 +35,17 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-quit
-		client.DestroyInstance()
+		account.Client.DestroyInstance()
 		os.Exit(1)
 	}()
 
 	for {
-		currentState, _ := client.Authorize()
+		currentState, _ := account.Client.Authorize()
 		if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitPhoneNumberType {
 			fmt.Print("Enter phone: ")
 			var number string
 			fmt.Scanln(&number)
-			_, err := client.SendPhoneNumber(number)
+			_, err := account.Client.SendPhoneNumber(number)
 			if err != nil {
 				fmt.Printf("Error sending phone number: %v\n", err)
 			}
@@ -53,7 +53,7 @@ func main() {
 			fmt.Print("Enter code: ")
 			var code string
 			fmt.Scanln(&code)
-			_, err := client.SendAuthCode(code)
+			_, err := account.Client.SendAuthCode(code)
 			if err != nil {
 				fmt.Printf("Error sending auth code : %v\n", err)
 			}
@@ -61,7 +61,7 @@ func main() {
 			fmt.Print("Enter Password: ")
 			var password string
 			fmt.Scanln(&password)
-			_, err := client.SendAuthPassword(password)
+			_, err := account.Client.SendAuthPassword(password)
 			if err != nil {
 				fmt.Printf("Error sending auth password: %v\n", err)
 			}
@@ -73,6 +73,6 @@ func main() {
 
 	fmt.Println("getting updates")
 
-	client.DoGetUpdates()
+	account.GetUpdates()
 
 }

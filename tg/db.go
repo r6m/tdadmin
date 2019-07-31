@@ -1,4 +1,4 @@
-package server
+package tg
 
 import "github.com/jmoiron/sqlx"
 

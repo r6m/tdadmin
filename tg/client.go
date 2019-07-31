@@ -1,6 +1,7 @@
-package server
+package tg
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync/atomic"
@@ -30,8 +31,8 @@ var (
 	scopeNotificationSettings = tdlib.NewScopeNotificationSettings(int32((3 * 30 * 24 * time.Hour).Seconds()), "", false, true, true)
 )
 
-type Client struct {
-	*tdlib.Client
+type Account struct {
+	Client       *tdlib.Client
 	db           *sqlx.DB
 	floodWait    time.Duration
 	lastFlood    time.Time
@@ -40,11 +41,11 @@ type Client struct {
 	joinerActive int32
 }
 
-func NewClient(config tdlib.Config) *Client {
+func NewAccount(config tdlib.Config) *Account {
 
 	client := tdlib.NewClient(config)
 
-	return &Client{
+	return &Account{
 		Client:       client,
 		lastFlood:    time.Time{},
 		stopCh:       make(chan struct{}, 0),
@@ -52,7 +53,7 @@ func NewClient(config tdlib.Config) *Client {
 	}
 }
 
-func (c *Client) handleErr(err error) bool {
+func (c *Account) handleErr(err error) bool {
 	var duration int64
 	if n, _ := fmt.Sscanf(err.Error(), "FLOOD_WAIT_%d", &duration); n == 1 {
 		log.Println("FLOOD_WAIT", duration, "sec")
@@ -64,13 +65,13 @@ func (c *Client) handleErr(err error) bool {
 	return false
 }
 
-func (c *Client) Stop() {
+func (c *Account) Stop() {
 	c.stopCh <- struct{}{}
 }
 
-func (c *Client) DoGetUpdates() {
+func (c *Account) GetUpdates() {
 	// rawUpdates gets all updates comming from tdlib
-	rawUpdates := c.GetRawUpdatesChannel(100)
+	rawUpdates := c.Client.GetRawUpdatesChannel(100)
 	defer func() {
 		close(rawUpdates)
 		close(c.stopCh)
@@ -86,15 +87,15 @@ func (c *Client) DoGetUpdates() {
 	}
 }
 
-func (c *Client) StopJoiner() {
+func (c *Account) StopJoiner() {
 	c.stopJoinerCh <- struct{}{}
 }
 
-func (c *Client) IsJoinng() bool {
+func (c *Account) IsJoinng() bool {
 	return atomic.LoadInt32(&c.joinerActive) == 1
 }
 
-func (c *Client) StartJoiner(interval time.Duration) {
+func (c *Account) StartJoiner(interval time.Duration) {
 
 	c.stopJoinerCh = make(chan struct{})
 	atomic.StoreInt32(&c.joinerActive, 1)
@@ -121,7 +122,7 @@ func (c *Client) StartJoiner(interval time.Duration) {
 	}
 }
 
-func (c *Client) joinGroup() error {
+func (c *Account) joinGroup() error {
 
 	if time.Since(c.lastFlood) < c.floodWait {
 		return fmt.Errorf("still flood waiting %s seconds", fmtDuration(c.floodWait-time.Since(c.lastFlood)))
@@ -153,7 +154,7 @@ func (c *Client) joinGroup() error {
 	}
 
 	// get chat info
-	inviteLinkInfo, err := c.CheckChatInviteLink(hash)
+	inviteLinkInfo, err := c.Client.CheckChatInviteLink(hash)
 	if err != nil {
 		if c.handleErr(err) {
 			rollbackHash(c.db, id)
@@ -172,7 +173,7 @@ func (c *Client) joinGroup() error {
 		return fmt.Errorf("low group member count: %d", inviteLinkInfo.MemberCount)
 	}
 
-	chat, err := c.JoinChatByInviteLink(hash)
+	chat, err := c.Client.JoinChatByInviteLink(hash)
 	if err != nil {
 		if c.handleErr(err) {
 			rollbackHash(c.db, id)
@@ -180,6 +181,24 @@ func (c *Client) joinGroup() error {
 		return err
 	}
 	log.Println("JOINED", chat.ID, chat.Title)
+
+	return nil
+}
+
+func (c *Account) GetGroupLinks() error {
+	messages, err := c.Client.SearchMessages("joinchat", 0, 0, 0, 100)
+	if err != nil {
+		c.handleErr(err)
+		return err
+	}
+
+	for _, message := range messages.Messages {
+		data, err := json.Marshal(message.Content)
+		if err != nil {
+			continue
+		}
+		DeafultHashCollector.Collect(string(data))
+	}
 
 	return nil
 }
