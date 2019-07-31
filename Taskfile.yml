@@ -1,0 +1,26 @@
+# https://taskfile.dev
+
+version: "2"
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  build:
+    cmds:
+      - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/app
+  upx:
+    cmds:
+      - upx bin/*
+
+  clean:
+    cmds:
+      - rm bin/*
+
+  docker:
+    cmds:
+      - task: clean
+      - task: build
+      - task: upx
+      - docker build -t rezam/upfollow:latest .
+      - docker push rezam/upfollow:latest
