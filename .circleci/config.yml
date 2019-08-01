@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+      - run: |
+          docker build -t rezam/tdadmin:latest .
+          echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+          docker push rezam/tdadmin:latest
