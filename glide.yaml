@@ -1,0 +1,9 @@
+package: tdadmin
+import:
+- package: github.com/go-sql-driver/mysql
+  version: ^1.4.1
+- package: github.com/jmoiron/sqlx
+  version: ^1.2.0
+- package: github.com/rezam90/go-tdlib
+- package: github.com/thoas/go-funk
+  version: ^0.4.0

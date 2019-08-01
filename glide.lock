@@ -1,0 +1,18 @@
+hash: a7798b97ff0f2ba8ae2b2d61cb58abaf507efb4f7152b41b731c528bd711c144
+updated: 2019-08-01T11:30:06.884863+04:30
+imports:
+- name: github.com/go-sql-driver/mysql
+  version: 72cd26f257d44c1114970e19afddcd812016007e
+- name: github.com/jmoiron/sqlx
+  version: d161d7a76b5661016ad0b085869f77fd410f3e6a
+  subpackages:
+  - reflectx
+- name: github.com/rezam90/go-tdlib
+  version: c3d5d42c9a126144518d2f6ff99da54b4488521f
+- name: github.com/thoas/go-funk
+  version: c43409e2d5def27be9b081e316441108def35c8d
+- name: google.golang.org/appengine
+  version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
+  subpackages:
+  - cloudsql
+testImports: []
