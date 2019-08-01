@@ -37,7 +37,7 @@ func init() {
 
 func main() {
 	tdlib.SetFilePath("./errors.txt")
-	tdlib.SetLogVerbosityLevel(1)
+	tdlib.SetLogVerbosityLevel(5)
 
 	log.Println("init db")
 	db := initDB()
