@@ -15,6 +15,6 @@ RUN apk add --no-cache tzdata ca-certificates libstdc++ libssl1.1 libcrypto1.1
 WORKDIR /app
 COPY --from=zenwalker/tdlib /usr/local/include/td /usr/local/include/td
 COPY --from=zenwalker/tdlib /usr/local/lib/libtd* /usr/local/lib/
-COPY --from=rbuilder  /app/app /app/app
+COPY --from=builder  /app/app /app/app
 
 ENTRYPOINT [ "/app/app" ]
